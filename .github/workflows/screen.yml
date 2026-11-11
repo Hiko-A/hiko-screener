@@ -1,0 +1,28 @@
+name: weekly-screen
+
+on:
+  schedule:
+    - cron: "30 23 * * 5"   # 毎週土曜 8:30(日本時間)
+  workflow_dispatch:        # 手動実行ボタン
+
+permissions:
+  contents: write
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install yfinance pandas lxml requests
+      - run: python screener.py
+      - name: 結果を保存
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add results
+          git commit -m "スクリーニング結果を更新" || echo "変更なし"
+          git push
